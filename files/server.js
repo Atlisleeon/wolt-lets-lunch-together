@@ -209,7 +209,7 @@ app.post('/admin/match', adminAuth, async (req, res) => {
       emailPromises.push(sendMatchEmail(p2, p1));
     }
 
-    await Promise.all(emailPromises);
+await Promise.allSettled(emailPromises);
 
     // Log round
     await roundsSheet.addRow({
