@@ -323,8 +323,7 @@
   </div>
 
   <script>
-    const API_BASE = window.API_BASE || 'https://YOUR_BACKEND_URL'; // set this
-
+const API_BASE = window.API_BASE || 'https://wolt-lets-lunch-together.onrender.com';
     async function handleRegister() {
       const email = document.getElementById('emailInput').value.trim();
       const name = document.getElementById('nameInput').value.trim();
@@ -356,6 +355,7 @@
 
       try {
         const res = await fetch(`${API_BASE}/register`, {
+  signal: AbortSignal.timeout(30000),
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email, name })
