@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Let's Lunch Together - Wolt</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Inter:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --wolt-teal: #009de0;
+      --wolt-dark: #0d1b2a;
+      --wolt-mid: #1a2e42;
+      --wolt-light: #e8f4fb;
+      --wolt-accent: #00c9a7;
+      --white: #ffffff;
+      --text-muted: #8ea6bc;
+      --card-bg: rgba(255,255,255,0.06);
+      --border: rgba(0,157,224,0.2);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--wolt-dark);
+      color: var(--white);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Background mesh */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 80% 50% at 20% 10%, rgba(0,157,224,0.12) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 40% at 80% 80%, rgba(0,201,167,0.08) 0%, transparent 50%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .container {
+      position: relative;
+      z-index: 1;
+      max-width: 520px;
+      margin: 0 auto;
+      padding: 48px 24px 80px;
+    }
+
+    /* Logo */
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 56px;
+    }
+    .logo-icon {
+      width: 36px;
+      height: 36px;
+      background: var(--wolt-teal);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+    }
+    .logo-text {
+      font-family: 'Syne', sans-serif;
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+      color: var(--white);
+    }
+    .logo-text span { color: var(--wolt-teal); }
+
+    /* Hero */
+    .hero {
+      margin-bottom: 40px;
+      animation: fadeUp 0.7s ease both;
+    }
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(0,157,224,0.12);
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      padding: 5px 14px;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--wolt-teal);
+      letter-spacing: 0.5px;
+      margin-bottom: 20px;
+    }
+    .hero h1 {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(2rem, 8vw, 2.8rem);
+      font-weight: 800;
+      line-height: 1.1;
+      letter-spacing: -1px;
+      margin-bottom: 16px;
+    }
+    .hero h1 .highlight {
+      background: linear-gradient(90deg, var(--wolt-teal), var(--wolt-accent));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .hero p {
+      color: var(--text-muted);
+      font-size: 15px;
+      line-height: 1.7;
+      max-width: 400px;
+    }
+
+    /* Form card */
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 32px;
+      backdrop-filter: blur(20px);
+      animation: fadeUp 0.7s ease 0.15s both;
+    }
+
+    .form-group {
+      margin-bottom: 18px;
+    }
+    .form-group label {
+      display: block;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-muted);
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+    .form-group input {
+      width: 100%;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 12px;
+      padding: 14px 16px;
+      font-family: 'Inter', sans-serif;
+      font-size: 15px;
+      color: var(--white);
+      outline: none;
+      transition: border-color 0.2s, background 0.2s;
+    }
+    .form-group input::placeholder { color: rgba(255,255,255,0.25); }
+    .form-group input:focus {
+      border-color: var(--wolt-teal);
+      background: rgba(0,157,224,0.06);
+    }
+    .form-group input.error { border-color: #ff6b6b; }
+
+    .error-msg {
+      font-size: 12px;
+      color: #ff6b6b;
+      margin-top: 6px;
+      display: none;
+    }
+    .error-msg.visible { display: block; }
+
+    .btn-primary {
+      width: 100%;
+      background: linear-gradient(135deg, var(--wolt-teal), #0080b8);
+      color: var(--white);
+      border: none;
+      border-radius: 12px;
+      padding: 16px;
+      font-family: 'Syne', sans-serif;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      letter-spacing: 0.3px;
+      transition: transform 0.15s, box-shadow 0.15s, opacity 0.15s;
+      margin-top: 8px;
+      position: relative;
+      overflow: hidden;
+    }
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0,157,224,0.35);
+    }
+    .btn-primary:active { transform: translateY(0); }
+    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+    .btn-primary .spinner {
+      display: none;
+      width: 18px; height: 18px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      margin: 0 auto;
+    }
+    .btn-primary.loading .btn-text { display: none; }
+    .btn-primary.loading .spinner { display: block; }
+
+    /* Success screen */
+    .success-screen {
+      display: none;
+      text-align: center;
+      padding: 24px 0;
+      animation: fadeUp 0.5s ease both;
+    }
+    .success-screen.visible { display: block; }
+    .success-icon {
+      width: 72px;
+      height: 72px;
+      background: linear-gradient(135deg, var(--wolt-accent), #00a88a);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      margin: 0 auto 20px;
+      animation: pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    }
+    .success-screen h2 {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.6rem;
+      font-weight: 800;
+      margin-bottom: 10px;
+    }
+    .success-screen p {
+      color: var(--text-muted);
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    /* Counter pill */
+    .counter-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(0,201,167,0.1);
+      border: 1px solid rgba(0,201,167,0.25);
+      border-radius: 100px;
+      padding: 8px 16px;
+      font-size: 13px;
+      color: var(--wolt-accent);
+      font-weight: 500;
+      margin-top: 32px;
+    }
+    .counter-dot {
+      width: 7px; height: 7px;
+      background: var(--wolt-accent);
+      border-radius: 50%;
+      animation: pulse 1.5s infinite;
+    }
+
+    /* Footer note */
+    .footer-note {
+      text-align: center;
+      margin-top: 32px;
+      font-size: 12px;
+      color: rgba(255,255,255,0.2);
+      animation: fadeUp 0.7s ease 0.3s both;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    @keyframes pop {
+      from { transform: scale(0.5); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(0.8); }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="logo">
+      <div class="logo-icon">🍱</div>
+      <div class="logo-text">Wolt <span>Lunch</span></div>
+    </div>
+
+    <div class="hero" id="heroSection">
+      <div class="hero-badge">✨ New this quarter</div>
+      <h1>Let's <span class="highlight">Lunch</span><br/>Together</h1>
+      <p>Meet a teammate you've never had a proper chat with. We'll match you with a lunch buddy - all you need to do is show up.</p>
+    </div>
+
+    <div class="card" id="formCard">
+      <div id="registerForm">
+        <div class="form-group">
+          <label>Work Email</label>
+          <input type="email" id="emailInput" placeholder="you@wolt.com"/>
+          <div class="error-msg" id="emailError">Please enter a valid Wolt email</div>
+        </div>
+        <div class="form-group">
+          <label>Full Name</label>
+          <input type="text" id="nameInput" placeholder="Your full name (as in Slack)"/>
+          <div class="error-msg" id="nameError">Please enter your full name</div>
+        </div>
+        <button class="btn-primary" id="registerBtn" onclick="handleRegister()">
+          <span class="btn-text">Count me in 🙋</span>
+          <div class="spinner"></div>
+        </button>
+      </div>
+
+      <div class="success-screen" id="successScreen">
+        <div class="success-icon">🎉</div>
+        <h2>You're in!</h2>
+        <p>We'll email you your lunch match when we have enough participants.<br/>Get ready to make a new friend.</p>
+        <div class="counter-pill">
+          <div class="counter-dot"></div>
+          <span id="counterText">Loading participants...</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer-note">Made with ❤️ by the Wolt People team</div>
+  </div>
+
+  <script>
+const API_BASE = window.API_BASE || 'https://wolt-lets-lunch-together.onrender.com';
+    async function handleRegister() {
+      const email = document.getElementById('emailInput').value.trim();
+      const name = document.getElementById('nameInput').value.trim();
+
+      let valid = true;
+
+      document.getElementById('emailError').classList.remove('visible');
+      document.getElementById('nameError').classList.remove('visible');
+      document.getElementById('emailInput').classList.remove('error');
+      document.getElementById('nameInput').classList.remove('error');
+
+      if (!email || !email.includes('@')) {
+        document.getElementById('emailError').classList.add('visible');
+        document.getElementById('emailInput').classList.add('error');
+        valid = false;
+      }
+
+      if (!name || name.length < 2) {
+        document.getElementById('nameError').classList.add('visible');
+        document.getElementById('nameInput').classList.add('error');
+        valid = false;
+      }
+
+      if (!valid) return;
+
+      const btn = document.getElementById('registerBtn');
+      btn.classList.add('loading');
+      btn.disabled = true;
+
+      try {
+        const res = await fetch(`${API_BASE}/register`, {
+  signal: AbortSignal.timeout(30000),
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, name })
+        });
+        const data = await res.json();
+
+        if (!res.ok) {
+          alert(data.error || 'Something went wrong. Please try again.');
+          btn.classList.remove('loading');
+          btn.disabled = false;
+          return;
+        }
+
+        document.getElementById('registerForm').style.display = 'none';
+        document.getElementById('successScreen').classList.add('visible');
+        loadCount();
+
+      } catch (e) {
+        alert('Network error. Please try again.');
+        btn.classList.remove('loading');
+        btn.disabled = false;
+      }
+    }
+
+    async function loadCount() {
+      try {
+        const res = await fetch(`${API_BASE}/count`);
+        const data = await res.json();
+        document.getElementById('counterText').textContent =
+          `${data.count} colleague${data.count !== 1 ? 's' : ''} joined so far`;
+      } catch(e) {
+        document.getElementById('counterText').textContent = 'Colleagues joining now...';
+      }
+    }
+  </script>
+</body>
+</html>

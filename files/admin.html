@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Lunch Matcher - Admin</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=Inter:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --teal: #009de0;
+      --dark: #0d1b2a;
+      --mid: #1a2e42;
+      --accent: #00c9a7;
+      --text-muted: #8ea6bc;
+      --border: rgba(0,157,224,0.2);
+      --card: rgba(255,255,255,0.05);
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      font-family:'Inter',sans-serif;
+      background:var(--dark);
+      color:#fff;
+      min-height:100vh;
+    }
+    body::before {
+      content:'';
+      position:fixed; inset:0;
+      background: radial-gradient(ellipse 80% 50% at 10% 10%, rgba(0,157,224,0.1) 0%, transparent 60%);
+      pointer-events:none;
+    }
+    .layout { display:flex; min-height:100vh; }
+    .sidebar {
+      width:220px;
+      background:rgba(255,255,255,0.03);
+      border-right:1px solid var(--border);
+      padding:28px 20px;
+      flex-shrink:0;
+    }
+    .sidebar .logo {
+      font-family:'Syne',sans-serif;
+      font-size:16px;
+      font-weight:700;
+      margin-bottom:40px;
+      display:flex;
+      align-items:center;
+      gap:8px;
+    }
+    .sidebar .logo span { color:var(--teal); }
+    .nav-item {
+      display:flex;
+      align-items:center;
+      gap:10px;
+      padding:10px 12px;
+      border-radius:10px;
+      font-size:13px;
+      font-weight:500;
+      color:var(--text-muted);
+      cursor:pointer;
+      transition:all 0.2s;
+      margin-bottom:4px;
+    }
+    .nav-item.active, .nav-item:hover {
+      background:rgba(0,157,224,0.1);
+      color:var(--teal);
+    }
+    .main { flex:1; padding:40px; overflow-y:auto; }
+    .page-header { margin-bottom:36px; }
+    .page-header h1 {
+      font-family:'Syne',sans-serif;
+      font-size:1.8rem;
+      font-weight:800;
+      letter-spacing:-0.5px;
+      margin-bottom:6px;
+    }
+    .page-header p { color:var(--text-muted); font-size:14px; }
+
+    .stats-row {
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
+      gap:16px;
+      margin-bottom:32px;
+    }
+    .stat-card {
+      background:var(--card);
+      border:1px solid var(--border);
+      border-radius:16px;
+      padding:20px;
+    }
+    .stat-label { font-size:11px; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.8px; margin-bottom:8px; }
+    .stat-value { font-family:'Syne',sans-serif; font-size:2rem; font-weight:800; }
+    .stat-value.teal { color:var(--teal); }
+    .stat-value.accent { color:var(--accent); }
+
+    .section-card {
+      background:var(--card);
+      border:1px solid var(--border);
+      border-radius:16px;
+      padding:24px;
+      margin-bottom:24px;
+    }
+    .section-title {
+      font-family:'Syne',sans-serif;
+      font-size:15px;
+      font-weight:700;
+      margin-bottom:16px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+    }
+
+    .action-btn {
+      background:none;
+      border:1px solid rgba(255,255,255,0.1);
+      border-radius:7px;
+      padding:5px 10px;
+      font-size:12px;
+      cursor:pointer;
+      transition:all 0.15s;
+      color:var(--text-muted);
+    }
+    .action-btn:hover { border-color:var(--teal); color:var(--teal); }
+    .action-btn.del:hover { border-color:#ff6b6b; color:#ff6b6b; }
+    .action-btn + .action-btn { margin-left:6px; }
+
+    /* Edit modal */
+    .modal-overlay {
+      display:none;
+      position:fixed; inset:0;
+      background:rgba(0,0,0,0.6);
+      z-index:200;
+      align-items:center;
+      justify-content:center;
+    }
+    .modal-overlay.open { display:flex; }
+    .modal {
+      background:#1a2e42;
+      border:1px solid var(--border);
+      border-radius:16px;
+      padding:28px;
+      width:360px;
+    }
+    .modal h3 { font-family:'Syne',sans-serif; font-size:16px; font-weight:700; margin-bottom:20px; }
+    .modal-field { margin-bottom:14px; }
+    .modal-field label { display:block; font-size:11px; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.8px; margin-bottom:6px; }
+    .modal-field input {
+      width:100%;
+      background:rgba(255,255,255,0.05);
+      border:1px solid rgba(255,255,255,0.1);
+      border-radius:8px;
+      padding:10px 12px;
+      font-size:14px;
+      color:#fff;
+      font-family:'Inter',sans-serif;
+      outline:none;
+    }
+    .modal-field input:focus { border-color:var(--teal); }
+    .modal-actions { display:flex; gap:10px; margin-top:20px; }
+
+    table { width:100%; border-collapse:collapse; }
+    th {
+      text-align:left;
+      font-size:11px;
+      color:var(--text-muted);
+      text-transform:uppercase;
+      letter-spacing:0.8px;
+      padding:0 12px 12px;
+    }
+    td {
+      padding:12px;
+      font-size:14px;
+      border-top:1px solid rgba(255,255,255,0.05);
+    }
+    tr:hover td { background:rgba(255,255,255,0.02); }
+    .badge {
+      display:inline-block;
+      padding:3px 10px;
+      border-radius:100px;
+      font-size:11px;
+      font-weight:600;
+    }
+    .badge.matched { background:rgba(0,201,167,0.15); color:var(--accent); }
+    .badge.pending { background:rgba(0,157,224,0.15); color:var(--teal); }
+
+    .btn {
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:12px 24px;
+      border-radius:10px;
+      font-family:'Syne',sans-serif;
+      font-size:14px;
+      font-weight:700;
+      cursor:pointer;
+      border:none;
+      transition:all 0.2s;
+    }
+    .btn-primary {
+      background:linear-gradient(135deg,var(--teal),#0080b8);
+      color:#fff;
+    }
+    .btn-primary:hover { transform:translateY(-2px); box-shadow:0 8px 20px rgba(0,157,224,0.3); }
+    .btn-primary:disabled { opacity:0.4; cursor:not-allowed; transform:none; box-shadow:none; }
+    .btn-danger {
+      background:rgba(255,80,80,0.1);
+      border:1px solid rgba(255,80,80,0.3);
+      color:#ff6b6b;
+    }
+    .btn-danger:hover { background:rgba(255,80,80,0.2); }
+
+    .match-action-row {
+      display:flex;
+      align-items:center;
+      gap:12px;
+      flex-wrap:wrap;
+    }
+    .match-note { font-size:12px; color:var(--text-muted); }
+
+    .spinner {
+      display:none;
+      width:16px; height:16px;
+      border:2px solid rgba(255,255,255,0.3);
+      border-top-color:#fff;
+      border-radius:50%;
+      animation:spin 0.7s linear infinite;
+    }
+    .loading .spinner { display:inline-block; }
+    .loading .btn-text { display:none; }
+
+    .toast {
+      position:fixed;
+      bottom:24px; right:24px;
+      background:#1a2e42;
+      border:1px solid var(--border);
+      border-radius:12px;
+      padding:14px 20px;
+      font-size:14px;
+      transform:translateY(80px);
+      opacity:0;
+      transition:all 0.3s;
+      z-index:100;
+    }
+    .toast.show { transform:translateY(0); opacity:1; }
+    .toast.success { border-color:rgba(0,201,167,0.4); }
+    .toast.error { border-color:rgba(255,80,80,0.4); }
+
+    .auth-gate {
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      min-height:100vh;
+    }
+    .auth-box {
+      background:var(--card);
+      border:1px solid var(--border);
+      border-radius:20px;
+      padding:40px;
+      width:360px;
+      text-align:center;
+    }
+    .auth-box h2 { font-family:'Syne',sans-serif; font-size:1.4rem; font-weight:800; margin-bottom:8px; }
+    .auth-box p { color:var(--text-muted); font-size:14px; margin-bottom:24px; }
+    .auth-input {
+      width:100%;
+      background:rgba(255,255,255,0.05);
+      border:1px solid rgba(255,255,255,0.1);
+      border-radius:10px;
+      padding:12px 16px;
+      font-family:'Inter',sans-serif;
+      font-size:15px;
+      color:#fff;
+      outline:none;
+      margin-bottom:16px;
+    }
+    .auth-input:focus { border-color:var(--teal); }
+
+    @keyframes spin { to { transform:rotate(360deg); } }
+  </style>
+</head>
+<body>
+
+<div class="auth-gate" id="authGate">
+  <div class="auth-box">
+    <div style="font-size:36px;margin-bottom:12px;">🔐</div>
+    <h2>Admin Access</h2>
+    <p>Enter the admin password to manage lunch matching</p>
+    <input type="password" class="auth-input" id="passwordInput" placeholder="Password" onkeydown="if(event.key==='Enter') checkAuth()"/>
+    <button class="btn btn-primary" style="width:100%" onclick="checkAuth()">Enter</button>
+  </div>
+</div>
+
+<div class="layout" id="adminLayout" style="display:none">
+  <div class="sidebar">
+    <div class="logo">🍱 Wolt <span>Lunch</span></div>
+    <div class="nav-item active">📋 Dashboard</div>
+    <div class="nav-item" onclick="window.open('../frontend/index.html','_blank')">🔗 Open App</div>
+  </div>
+
+  <div class="main">
+    <div class="page-header">
+      <h1>Lunch Matcher Admin</h1>
+      <p>Manage registrations and trigger matching rounds</p>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-label">Total Registered</div>
+        <div class="stat-value teal" id="statTotal">-</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Pending Match</div>
+        <div class="stat-value" id="statPending">-</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Already Matched</div>
+        <div class="stat-value accent" id="statMatched">-</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Rounds Run</div>
+        <div class="stat-value" id="statRounds">-</div>
+      </div>
+    </div>
+
+    <div class="section-card">
+      <div class="section-title">
+        Run Matching Round
+      </div>
+      <div class="match-action-row">
+        <button class="btn btn-primary" id="matchBtn" onclick="runMatching()">
+          <span class="btn-text">🎯 Match & Send Emails</span>
+          <div class="spinner"></div>
+        </button>
+        <button class="btn btn-danger" onclick="clearAll()">🗑️ Reset All</button>
+        <span class="match-note" id="matchNote">Pairs unmatched participants and sends email + Google Sheets update</span>
+      </div>
+    </div>
+
+    <div class="section-card">
+      <div class="section-title">
+        Participants
+        <button class="btn btn-primary" style="padding:6px 14px;font-size:12px" onclick="loadData()">↻ Refresh</button>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Registered</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="participantsTable">
+          <tr><td colspan="4" style="color:var(--text-muted);text-align:center;padding:24px">Loading...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  const API_BASE = window.API_BASE || 'https://YOUR_BACKEND_URL';
+  const ADMIN_PASSWORD = 'wolt-lunch-2025'; // Change this or move to backend auth
+
+  function checkAuth() {
+    const pw = document.getElementById('passwordInput').value;
+    if (pw === ADMIN_PASSWORD) {
+      document.getElementById('authGate').style.display = 'none';
+      document.getElementById('adminLayout').style.display = 'flex';
+      loadData();
+    } else {
+      showToast('Wrong password', 'error');
+    }
+  }
+
+  async function loadData() {
+    try {
+      const res = await fetch(`${API_BASE}/admin/participants`, {
+        headers: { 'x-admin-key': ADMIN_PASSWORD }
+      });
+      const data = await res.json();
+
+      document.getElementById('statTotal').textContent = data.participants.length;
+      document.getElementById('statPending').textContent = data.participants.filter(p => !p.matched).length;
+      document.getElementById('statMatched').textContent = data.participants.filter(p => p.matched).length;
+      document.getElementById('statRounds').textContent = data.rounds || 0;
+
+      const tbody = document.getElementById('participantsTable');
+      if (!data.participants.length) {
+        tbody.innerHTML = '<tr><td colspan="4" style="color:var(--text-muted);text-align:center;padding:24px">No registrations yet</td></tr>';
+        return;
+      }
+      tbody.innerHTML = data.participants.map(p => `
+        <tr>
+          <td><strong>${p.name}</strong></td>
+          <td style="color:var(--text-muted)">${p.email}</td>
+          <td style="color:var(--text-muted);font-size:12px">${new Date(p.timestamp).toLocaleString()}</td>
+          <td><span class="badge ${p.matched ? 'matched' : 'pending'}">${p.matched ? 'Matched' : 'Pending'}</span></td>
+          <td>
+            <button class="action-btn" onclick="openEdit('${p.email}','${p.name.replace(/'/g,"\\'")}')">✏️ Edit</button>
+            <button class="action-btn del" onclick="deleteParticipant('${p.email}','${p.name.replace(/'/g,"\\'")}')">🗑️</button>
+          </td>
+        </tr>
+      `).join('');
+    } catch(e) {
+      showToast('Failed to load data', 'error');
+    }
+  }
+
+  async function runMatching() {
+    const btn = document.getElementById('matchBtn');
+    btn.classList.add('loading');
+    btn.disabled = true;
+    document.getElementById('matchNote').textContent = 'Matching in progress...';
+
+    try {
+      const res = await fetch(`${API_BASE}/admin/match`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-admin-key': ADMIN_PASSWORD }
+      });
+      const data = await res.json();
+
+      if (!res.ok) throw new Error(data.error || 'Matching failed');
+      showToast(`✅ Matched ${data.matched} pairs! Emails sent.`, 'success');
+      document.getElementById('matchNote').textContent = `Last run: ${data.matched} pairs matched`;
+      loadData();
+    } catch(e) {
+      showToast(e.message, 'error');
+      document.getElementById('matchNote').textContent = 'Error during matching. Try again.';
+    }
+
+    btn.classList.remove('loading');
+    btn.disabled = false;
+  }
+
+  async function clearAll() {
+    if (!confirm('⚠️ This will clear all participants. Are you sure?')) return;
+    try {
+      await fetch(`${API_BASE}/admin/clear`, {
+        method: 'DELETE',
+        headers: { 'x-admin-key': ADMIN_PASSWORD }
+      });
+      showToast('All participants cleared', 'success');
+      loadData();
+    } catch(e) {
+      showToast('Failed to clear', 'error');
+    }
+  }
+
+  function showToast(msg, type='success') {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = `toast show ${type}`;
+    setTimeout(() => t.className = 'toast', 3500);
+  }
+</script>
+<div class="modal-overlay" id="editModal">
+  <div class="modal">
+    <h3>✏️ Edit Participant</h3>
+    <div class="modal-field">
+      <label>Full Name</label>
+      <input type="text" id="editName" placeholder="Full name"/>
+    </div>
+    <div class="modal-field">
+      <label>Email</label>
+      <input type="email" id="editEmail" placeholder="email@wolt.com"/>
+    </div>
+    <input type="hidden" id="editOriginalEmail"/>
+    <div class="modal-actions">
+      <button class="btn btn-primary" onclick="saveEdit()">Save</button>
+      <button class="btn" style="background:rgba(255,255,255,0.05);color:var(--text-muted)" onclick="closeEdit()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  function openEdit(email, name) {
+    document.getElementById('editOriginalEmail').value = email;
+    document.getElementById('editName').value = name;
+    document.getElementById('editEmail').value = email;
+    document.getElementById('editModal').classList.add('open');
+  }
+
+  function closeEdit() {
+    document.getElementById('editModal').classList.remove('open');
+  }
+
+  async function saveEdit() {
+    const originalEmail = document.getElementById('editOriginalEmail').value;
+    const name = document.getElementById('editName').value.trim();
+    const newEmail = document.getElementById('editEmail').value.trim();
+
+    if (!name || !newEmail) return;
+
+    try {
+      const res = await fetch(`${API_BASE}/admin/participant/${encodeURIComponent(originalEmail)}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', 'x-admin-key': ADMIN_PASSWORD },
+        body: JSON.stringify({ name, newEmail })
+      });
+      if (!res.ok) throw new Error('Failed');
+      showToast('Participant updated', 'success');
+      closeEdit();
+      loadData();
+    } catch(e) {
+      showToast('Failed to update', 'error');
+    }
+  }
+
+  async function deleteParticipant(email, name) {
+    if (!confirm(`Delete ${name}?`)) return;
+    try {
+      const res = await fetch(`${API_BASE}/admin/participant/${encodeURIComponent(email)}`, {
+        method: 'DELETE',
+        headers: { 'x-admin-key': ADMIN_PASSWORD }
+      });
+      if (!res.ok) throw new Error('Failed');
+      showToast(`${name} removed`, 'success');
+      loadData();
+    } catch(e) {
+      showToast('Failed to delete', 'error');
+    }
+  }
+</script>
+</body>
+</html>
